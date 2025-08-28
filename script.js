@@ -2,27 +2,29 @@
    SCRIPT GENERAL REDSAS
    ================================ */
 
-// === SLIDER AUTOMÁTICO (Inicio) ===
+/* --- Slider automático --- */
 let currentSlide = 0;
 const slides = document.querySelectorAll(".hero-slider .slider-item");
 
 function showSlide(index) {
+  if (!slides || slides.length === 0) return;
   slides.forEach((slide, i) => {
     slide.classList.toggle("active", i === index);
   });
 }
 
 function nextSlide() {
+  if (!slides || slides.length === 0) return;
   currentSlide = (currentSlide + 1) % slides.length;
   showSlide(currentSlide);
 }
 
-if (slides.length > 0) {
+if (slides && slides.length > 0) {
   setInterval(nextSlide, 4000); // cambia cada 4 seg
   showSlide(currentSlide);
 }
 
-// === BOTÓN VOLVER ARRIBA ===
+/* --- Botón volver arriba --- */
 const backToTop = document.querySelector(".back-to-top");
 if (backToTop) {
   window.addEventListener("scroll", () => {
@@ -34,19 +36,20 @@ if (backToTop) {
   });
 }
 
-// === RESALTAR MENÚ ACTIVO ===
-const currentPage = window.location.pathname.split("/").pop();
+/* --- Resaltar menú activo --- */
+const currentPageRaw = window.location.pathname.split("/").pop();
+const currentPage = currentPageRaw === "" ? "index.html" : currentPageRaw;
 document.querySelectorAll(".nav-menu a").forEach(link => {
-  if (link.getAttribute("href") === currentPage) {
+  const href = link.getAttribute("href");
+  if (href === currentPage) {
     link.classList.add("active-link");
   } else {
     link.classList.remove("active-link");
   }
 });
 
-// === VALIDACIÓN DE FORMULARIOS ===
-
-// Formulario Solicitar Servicio
+/* --- Validación / manejo simple de formularios --- */
+/* Formulario Solicitar Servicio */
 const solicitudForm = document.querySelector("#solicitud-form");
 if (solicitudForm) {
   solicitudForm.addEventListener("submit", (e) => {
@@ -56,7 +59,7 @@ if (solicitudForm) {
   });
 }
 
-// Formulario Calificación
+/* Formulario Calificación */
 const calificarForm = document.querySelector("#calificacion-form");
 if (calificarForm) {
   calificarForm.addEventListener("submit", (e) => {
@@ -66,9 +69,7 @@ if (calificarForm) {
   });
 }
 
-// === PANEL ADMINISTRADOR ===
-
-// Datos de ejemplo
+/* === PANEL ADMINISTRADOR (datos de ejemplo) === */
 const solicitudes = [
   { id: 1, nombre: "Juan Pérez", servicio: "Cita médica", estado: "pendiente", residencia: "Medellín", tiempo: "3 horas" },
   { id: 2, nombre: "María Gómez", servicio: "Compras", estado: "asignado", residencia: "Envigado", tiempo: "2 horas" },
@@ -79,7 +80,7 @@ const asistentes = [
   { id: 2, nombre: "Ana Torres", estudios: "Gerontología", disponibilidad: "Fines de semana", residencia: "Medellín", vehiculo: "No", estado: "verificado" },
 ];
 
-// Renderizar solicitudes
+/* Renderizar solicitudes si existe el contenedor */
 const solicitudesList = document.querySelector("#solicitudes-list");
 if (solicitudesList) {
   solicitudesList.innerHTML = "";
@@ -98,7 +99,7 @@ if (solicitudesList) {
   });
 }
 
-// Renderizar asistentes
+/* Renderizar asistentes si existe el contenedor */
 const asistentesList = document.querySelector("#asistentes-list");
 if (asistentesList) {
   asistentesList.innerHTML = "";
@@ -126,10 +127,63 @@ if (asistentesList) {
     btn.addEventListener("click", () => {
       const id = btn.dataset.id;
       alert(`✅ Asistente ID ${id} verificado`);
-      btn.replaceWith(document.createElement("span"));
-      btn.parentElement.querySelector("span").classList.add("badge");
-      btn.parentElement.querySelector("span").innerText = "✔ Verificado";
+      const span = document.createElement("span");
+      span.classList.add("badge");
+      span.innerText = "✔ Verificado";
+      btn.replaceWith(span);
     });
   });
 }
+
+/* ===========================
+   MODALES (abrir / cerrar)
+   =========================== */
+document.querySelectorAll('.open-modal-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const serviceId = btn.getAttribute('data-service-id');
+    const modal = document.getElementById(`${serviceId}-modal`);
+    if (!modal) return;
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+    // disable scroll behind modal
+    document.body.style.overflow = 'hidden';
+  });
+});
+
+document.querySelectorAll('.close-button').forEach(closeBtn => {
+  closeBtn.addEventListener('click', () => {
+    const modalId = closeBtn.getAttribute('data-modal-id');
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    modal.classList.remove('active');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  });
+});
+
+// Cerrar modal clickeando fuera del contenido
+window.addEventListener('click', (e) => {
+  document.querySelectorAll('.modal.active').forEach(modal => {
+    if (e.target === modal) {
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+  });
+});
+
+// Links que cierran modal y navegan (si los hay)
+document.querySelectorAll('.close-modal-and-navigate').forEach(link => {
+  link.addEventListener('click', (e) => {
+    // close parent modal
+    const modal = link.closest('.modal');
+    if (modal) {
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+    // leave navigation normal (no preventDefault)
+  });
+});
+
 
